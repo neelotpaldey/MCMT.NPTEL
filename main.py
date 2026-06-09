@@ -1,469 +1,329 @@
-```python
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
-# ==========================================
-# PAGE CONFIG
-# ==========================================
 st.set_page_config(
-    page_title="NPTEL Course Helper",
-    page_icon="🎓",
-    layout="wide"
+page_title="NPTEL Course Helper",
+page_icon="🎓",
+layout="wide"
 )
 
-# ==========================================
-# GOOGLE SHEET CSV
-# ==========================================
 CSV_URL = "https://docs.google.com/spreadsheets/d/1QjQPP0R2yFsajCjnTT3-QmUqdqLHHWnJkesXPMAE8QY/export?format=csv"
 
-# ==========================================
-# LOAD DATA
-# ==========================================
 @st.cache_data(ttl=3600)
 def load_data():
-    df = pd.read_csv(CSV_URL)
+df = pd.read_csv(CSV_URL)
 
-    # Convert date columns if present
-    date_columns = [
-        "Start Date",
-        "End Date",
-        "Exam Date",
-        "Enrollment End Date",
-        "Exam Registration End Date"
-    ]
+```
+# Remove blank columns
+df = df.loc[:, ~df.columns.str.contains("^Unnamed", na=False)]
+df = df.drop(columns=[c for c in df.columns if str(c).strip() in ["", ".", ".1", ".2", ".3"]], errors="ignore")
 
-    for col in date_columns:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+date_cols = [
+    "Start date",
+    "End date",
+    "Exam date",
+    "Enrollment End date",
+    "Exam Registration End date"
+]
 
-    return df
+for col in date_cols:
+    if col in df.columns:
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+return df
+```
 
 df = load_data()
 
-# ==========================================
-# HEADER
-# ==========================================
 st.title("🎓 NPTEL Course Helper")
-st.caption("Find the right NPTEL course quickly")
 
-# ==========================================
-# IMPORTANCE SECTION
-# ==========================================
-with st.container():
+st.markdown("""
 
-    st.markdown("""
-    ## Why NPTEL & IIT Certificates Matter?
+### Why NPTEL & IIT Certificates Matter
 
-    ✅ Enhance Resume Value
+✅ Improve Resume Quality
 
-    ✅ Recognized by Recruiters and Industry
+✅ Recognized by Industry & Recruiters
 
-    ✅ Learn Directly from IIT/IISc Faculty
+✅ Learn from IIT / IISc Faculty
 
-    ✅ Useful for Placements, Internships and Higher Studies
+✅ Helpful for Placements & Internships
 
-    ✅ Add Certificates to LinkedIn
+✅ Add to LinkedIn Profile
 
-    ✅ Gain Industry-Oriented Skills Beyond University Curriculum
+✅ Build Industry-Relevant Skills
+""")
 
-    ✅ Strong Advantage for Competitive Exams and Career Growth
-    """)
+col1, col2 = st.columns(2)
 
-    col1, col2 = st.columns(2)
+with col1:
+st.success("VBSPU Students → Jaunpur Local Chapter (8666)")
 
-    with col1:
-        st.success(
-            """
-            VBSPU Students
-
-            Local Chapter: Jaunpur
-
-            Code: 8666
-            """
-        )
-
-    with col2:
-        st.info(
-            """
-            MGKVP Students
-
-            Local Chapter: Varanasi
-
-            Code: 8664
-            """
-        )
+with col2:
+st.info("MGKVP Students → Varanasi Local Chapter (8664)")
 
 st.divider()
 
-# ==========================================
-# SIDEBAR FILTERS
-# ==========================================
+# SIDEBAR
+
 st.sidebar.header("🔍 Search Courses")
 
-# Course Name Column Detection
-course_col = None
-
-possible_course_cols = [
-    "Course Name",
-    "Course",
-    "Name",
-    "Title"
-]
-
-for c in possible_course_cols:
-    if c in df.columns:
-        course_col = c
-        break
-
-# Discipline Column
-discipline_col = None
-
-for c in df.columns:
-    if "discipline" in c.lower():
-        discipline_col = c
-        break
-
-# Duration Column
-duration_col = None
-
-for c in df.columns:
-    if "duration" in c.lower():
-        duration_col = c
-        break
-
-# ==========================================
-# SEARCH TOPIC
-# ==========================================
-keyword = st.sidebar.text_input(
-    "Search Topic",
-    placeholder="python, ai, finance, machine learning..."
+topic = st.sidebar.text_input(
+"Search Topic",
+placeholder="Python, AI, Finance, Java..."
 )
 
-# ==========================================
-# DISCIPLINE FILTER
-# ==========================================
-if discipline_col:
-
-    disciplines = sorted(
-        df[discipline_col]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    selected_discipline = st.sidebar.multiselect(
-        "Discipline",
-        disciplines
-    )
-else:
-    selected_discipline = []
-
-# ==========================================
-# DURATION FILTER
-# ==========================================
-if duration_col:
-
-    durations = sorted(
-        df[duration_col]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    selected_duration = st.sidebar.multiselect(
-        "Duration",
-        durations
-    )
-else:
-    selected_duration = []
-
-# ==========================================
-# START DATE
-# ==========================================
-start_filter = st.sidebar.date_input(
-    "Starts After",
-    value=None
+selected_keys = st.sidebar.multiselect(
+"Category",
+options=sorted(df["Key"].dropna().unique())
 )
 
-# ==========================================
-# EXAM DATE
-# ==========================================
-exam_filter = st.sidebar.date_input(
-    "Exam Before",
-    value=None
+selected_duration = st.sidebar.multiselect(
+"Duration",
+options=sorted(df["Duration"].dropna().unique())
 )
 
-# ==========================================
-# RECOMMENDATION SECTION
-# ==========================================
+selected_institute = st.sidebar.multiselect(
+"Institute",
+options=sorted(df["Institute"].dropna().unique())
+)
+
+start_after = st.sidebar.date_input(
+"Starts After",
+value=None
+)
+
+exam_before = st.sidebar.date_input(
+"Exam Before",
+value=None
+)
+
 st.sidebar.divider()
 
-st.sidebar.subheader("⭐ Quick Recommendations")
-
-recommended_stream = st.sidebar.selectbox(
-    "Recommended For",
-    [
-        "All",
-        "BCA Students",
-        "MCA Students",
-        "Management Students",
-        "Math Students"
-    ]
+recommendation = st.sidebar.selectbox(
+"⭐ Recommended For",
+[
+"All",
+"BCA Students",
+"MCA Students",
+"Management Students",
+"Mathematics Students"
+]
 )
 
-# ==========================================
-# FILTERING
-# ==========================================
-filtered_df = df.copy()
+filtered = df.copy()
 
 # Topic Search
-if keyword:
 
-    mask = pd.Series(False, index=filtered_df.index)
+if topic:
+mask = pd.Series(False, index=filtered.index)
 
-    for col in filtered_df.columns:
-        try:
-            mask = mask | filtered_df[col].astype(str).str.contains(
-                keyword,
-                case=False,
-                na=False
-            )
-        except:
-            pass
+```
+for col in filtered.columns:
+    mask |= filtered[col].astype(str).str.contains(
+        topic,
+        case=False,
+        na=False
+    )
 
-    filtered_df = filtered_df[mask]
+filtered = filtered[mask]
+```
 
-# Discipline
-if selected_discipline and discipline_col:
-    filtered_df = filtered_df[
-        filtered_df[discipline_col].isin(selected_discipline)
-    ]
+# Key Filter
 
-# Duration
-if selected_duration and duration_col:
-    filtered_df = filtered_df[
-        filtered_df[duration_col].astype(str).isin(selected_duration)
-    ]
+if selected_keys:
+filtered = filtered[
+filtered["Key"].isin(selected_keys)
+]
+
+# Duration Filter
+
+if selected_duration:
+filtered = filtered[
+filtered["Duration"].isin(selected_duration)
+]
+
+# Institute Filter
+
+if selected_institute:
+filtered = filtered[
+filtered["Institute"].isin(selected_institute)
+]
 
 # Start Date
-if "Start Date" in filtered_df.columns:
-    if start_filter:
-        filtered_df = filtered_df[
-            filtered_df["Start Date"] >= pd.to_datetime(start_filter)
-        ]
+
+if start_after:
+filtered = filtered[
+filtered["Start date"] >= pd.to_datetime(start_after)
+]
 
 # Exam Date
-if "Exam Date" in filtered_df.columns:
-    if exam_filter:
-        filtered_df = filtered_df[
-            filtered_df["Exam Date"] <= pd.to_datetime(exam_filter)
-        ]
 
-# ==========================================
-# RECOMMENDATION ENGINE
-# ==========================================
-if recommended_stream != "All":
+if exam_before:
+filtered = filtered[
+filtered["Exam date"] <= pd.to_datetime(exam_before)
+]
 
-    recommendation_keywords = {
-        "BCA Students": [
-            "python",
-            "java",
-            "web",
-            "database",
-            "dbms",
-            "cloud",
-            "cyber",
-            "data structure",
-            "programming",
-            "ai",
-            "machine learning"
-        ],
+# Recommendation Engine
 
-        "MCA Students": [
-            "machine learning",
-            "ai",
-            "cloud",
-            "data science",
-            "deep learning",
-            "cyber security",
-            "software engineering",
-            "analytics"
-        ],
+if recommendation != "All":
 
-        "Management Students": [
-            "management",
-            "finance",
-            "marketing",
-            "hr",
-            "entrepreneurship",
-            "business"
-        ],
+```
+keywords = {
+    "BCA Students": [
+        "python","java","dbms","database",
+        "web","cloud","cyber","programming",
+        "ai","machine learning"
+    ],
 
-        "Math Students": [
-            "mathematics",
-            "statistics",
-            "probability",
-            "calculus",
-            "linear algebra"
-        ]
-    }
+    "MCA Students": [
+        "ai","machine learning",
+        "deep learning","cloud",
+        "cyber security","data science"
+    ],
 
-    keywords = recommendation_keywords[recommended_stream]
+    "Management Students": [
+        "management","marketing",
+        "finance","business",
+        "entrepreneurship","hr"
+    ],
 
-    mask = pd.Series(False, index=filtered_df.index)
+    "Mathematics Students": [
+        "mathematics","statistics",
+        "probability","calculus",
+        "algebra"
+    ]
+}
 
-    for col in filtered_df.columns:
-        try:
-            for k in keywords:
-                mask = mask | filtered_df[col].astype(str).str.contains(
-                    k,
-                    case=False,
-                    na=False
-                )
-        except:
-            pass
+mask = pd.Series(False, index=filtered.index)
 
-    filtered_df = filtered_df[mask]
+for word in keywords[recommendation]:
+    mask |= filtered["Course Name"].astype(str).str.contains(
+        word,
+        case=False,
+        na=False
+    )
 
-# ==========================================
+filtered = filtered[mask]
+```
+
 # DASHBOARD
-# ==========================================
+
 st.subheader("📊 Dashboard")
 
-col1, col2, col3, col4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-col1.metric(
-    "Courses Found",
-    len(filtered_df)
+c1.metric("Courses Found", len(filtered))
+
+c2.metric(
+"Institutes",
+filtered["Institute"].nunique()
 )
 
-if "Start Date" in filtered_df.columns:
-    upcoming = (
-        filtered_df["Start Date"] >= pd.Timestamp.today()
-    ).sum()
+c3.metric(
+"Disciplines",
+filtered["Discipline"].nunique()
+)
 
-    col2.metric(
-        "Upcoming Starts",
-        upcoming
-    )
-
-if "Exam Date" in filtered_df.columns:
-    exams = (
-        filtered_df["Exam Date"] >= pd.Timestamp.today()
-    ).sum()
-
-    col3.metric(
-        "Upcoming Exams",
-        exams
-    )
-
-col4.metric(
-    "Columns Available",
-    len(df.columns)
+c4.metric(
+"Categories",
+filtered["Key"].nunique()
 )
 
 st.divider()
 
-# ==========================================
-# RESULTS
-# ==========================================
-st.subheader("📚 Course Results")
+# QUICK BUTTONS
 
-if len(filtered_df) == 0:
-    st.warning("No matching courses found.")
-    st.stop()
+st.subheader("🚀 Quick Filters")
 
-# ==========================================
-# COURSE CARDS
-# ==========================================
-for idx, row in filtered_df.iterrows():
+q1, q2, q3 = st.columns(3)
 
-    title = row.get(course_col, "Course")
+with q1:
+if st.button("💻 Computer Science"):
+filtered = filtered[
+filtered["Key"].astype(str).str.contains(
+"CS",
+case=False,
+na=False
+)
+]
 
-    with st.container():
+with q2:
+if st.button("📈 Management"):
+filtered = filtered[
+filtered["Key"].astype(str).str.contains(
+"MGMT",
+case=False,
+na=False
+)
+]
 
-        st.markdown(f"## 🎓 {title}")
+with q3:
+if st.button("➗ Mathematics"):
+filtered = filtered[
+filtered["Key"].astype(str).str.contains(
+"Math",
+case=False,
+na=False
+)
+]
 
-        c1, c2, c3 = st.columns(3)
+st.divider()
 
-        with c1:
+st.subheader(f"📚 Available Courses ({len(filtered)})")
 
-            if discipline_col:
-                st.write(
-                    f"**Discipline:** {row.get(discipline_col,'')}"
-                )
+if filtered.empty:
+st.warning("No courses found.")
+st.stop()
 
-            if duration_col:
-                st.write(
-                    f"**Duration:** {row.get(duration_col,'')}"
-                )
+for _, row in filtered.iterrows():
 
-        with c2:
+```
+with st.container():
 
-            if "Start Date" in df.columns:
-                st.write(
-                    f"**Start Date:** {row.get('Start Date')}"
-                )
+    st.markdown(f"## 🎓 {row['Course Name']}")
 
-            if "End Date" in df.columns:
-                st.write(
-                    f"**End Date:** {row.get('End Date')}"
-                )
+    a, b, c = st.columns(3)
 
-        with c3:
+    with a:
+        st.write("**Institute:**", row["Institute"])
+        st.write("**Category:**", row["Key"])
+        st.write("**Duration:**", row["Duration"])
 
-            if "Exam Date" in df.columns:
-                st.write(
-                    f"**Exam Date:** {row.get('Exam Date')}"
-                )
+    with b:
+        st.write("**Start Date:**", row["Start date"].date())
+        st.write("**End Date:**", row["End date"].date())
 
-            if "Enrollment End Date" in df.columns:
-                st.write(
-                    f"**Enroll Till:** {row.get('Enrollment End Date')}"
-                )
+    with c:
+        st.write("**Exam Date:**", row["Exam date"].date())
+        st.write("**Enroll Till:**", row["Enrollment End date"].date())
 
-        # Enrollment Link
-        url_column = None
+    st.link_button(
+        "🔗 Enroll Now",
+        row["Click here to Join the course"]
+    )
 
-        for c in df.columns:
-            if "url" in c.lower() or "link" in c.lower():
-                url_column = c
-                break
+    with st.expander("📄 Full Details"):
 
-        if url_column and pd.notna(row[url_column]):
+        details = pd.DataFrame({
+            "Field": row.index,
+            "Value": row.values
+        })
 
-            st.link_button(
-                "🔗 Enroll Now",
-                str(row[url_column])
-            )
+        st.dataframe(
+            details,
+            use_container_width=True,
+            hide_index=True
+        )
 
-        with st.expander("📄 View Complete Course Details"):
+    st.divider()
+```
 
-            details = pd.DataFrame(
-                {
-                    "Field": row.index,
-                    "Value": row.values
-                }
-            )
-
-            st.dataframe(
-                details,
-                use_container_width=True,
-                hide_index=True
-            )
-
-        st.divider()
-
-# ==========================================
-# DOWNLOAD FILTERED DATA
-# ==========================================
-csv = filtered_df.to_csv(index=False)
+csv = filtered.to_csv(index=False)
 
 st.download_button(
-    "⬇ Download Filtered Courses",
-    csv,
-    file_name="filtered_nptel_courses.csv",
-    mime="text/csv"
+"⬇ Download Filtered Courses",
+csv,
+file_name="nptel_courses.csv",
+mime="text/csv"
 )
-```
