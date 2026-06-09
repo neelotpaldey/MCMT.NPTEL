@@ -13,7 +13,6 @@ CSV_URL = "https://docs.google.com/spreadsheets/d/1QjQPP0R2yFsajCjnTT3-QmUqdqLHH
 def load_data():
     df = pd.read_csv(CSV_URL)
 
-```
 # Remove blank columns
 df = df.loc[:, ~df.columns.str.contains("^Unnamed", na=False)]
 df = df.drop(columns=[c for c in df.columns if str(c).strip() in ["", ".", ".1", ".2", ".3"]], errors="ignore")
