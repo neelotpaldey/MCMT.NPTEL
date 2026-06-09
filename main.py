@@ -30,7 +30,7 @@ for col in date_cols:
         df[col] = pd.to_datetime(df[col], errors="coerce")
 
 return df
-```
+
 
 df = load_data()
 
@@ -117,7 +117,6 @@ filtered = df.copy()
 if topic:
 mask = pd.Series(False, index=filtered.index)
 
-```
 for col in filtered.columns:
     mask |= filtered[col].astype(str).str.contains(
         topic,
@@ -126,7 +125,6 @@ for col in filtered.columns:
     )
 
 filtered = filtered[mask]
-```
 
 # Key Filter
 
@@ -167,7 +165,7 @@ filtered["Exam date"] <= pd.to_datetime(exam_before)
 
 if recommendation != "All":
 
-```
+
 keywords = {
     "BCA Students": [
         "python","java","dbms","database",
@@ -204,7 +202,7 @@ for word in keywords[recommendation]:
     )
 
 filtered = filtered[mask]
-```
+
 
 # DASHBOARD
 
@@ -277,7 +275,7 @@ st.stop()
 
 for _, row in filtered.iterrows():
 
-```
+
 with st.container():
 
     st.markdown(f"## 🎓 {row['Course Name']}")
@@ -316,7 +314,7 @@ with st.container():
         )
 
     st.divider()
-```
+
 
 csv = filtered.to_csv(index=False)
 
