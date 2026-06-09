@@ -55,11 +55,9 @@ st.markdown("""
 
 col1, col2 = st.columns(2)
 
-with col1:
-st.success("VBSPU Students → Jaunpur Local Chapter (8666)")
+with col1: st.success("VBSPU Students → Jaunpur Local Chapter (8666)")
 
-with col2:
-st.info("MGKVP Students → Varanasi Local Chapter (8664)")
+with col2: st.info("MGKVP Students → Varanasi Local Chapter (8664)")
 
 st.divider()
 
