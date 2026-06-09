@@ -11,7 +11,7 @@ CSV_URL = "https://docs.google.com/spreadsheets/d/1QjQPP0R2yFsajCjnTT3-QmUqdqLHH
 
 @st.cache_data(ttl=3600)
 def load_data():
-df = pd.read_csv(CSV_URL)
+    df = pd.read_csv(CSV_URL)
 
 ```
 # Remove blank columns
