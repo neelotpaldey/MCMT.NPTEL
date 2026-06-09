@@ -112,8 +112,7 @@ filtered = df.copy()
 
 # Topic Search
 
-if topic:
-mask = pd.Series(False, index=filtered.index)
+if topic: mask = pd.Series(False, index=filtered.index)
 
 for col in filtered.columns:
     mask |= filtered[col].astype(str).str.contains(
