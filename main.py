@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 
-st.set_page_config(page_title="NPTEL Course Helper", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="MCMT X NPTEL", page_icon="🎓", layout="wide")
 
 GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1QjQPP0R2yFsajCjnTT3-QmUqdqLHHWnJkesXPMAE8QY/export?format=csv"
 
