@@ -125,8 +125,7 @@ filtered = filtered[mask]
 
 # Key Filter
 
-if selected_keys:
-filtered = filtered[
+if selected_keys: filtered = filtered[
 filtered["Key"].isin(selected_keys)
 ]
 
@@ -140,30 +139,30 @@ filtered["Duration"].isin(selected_duration)
 # Institute Filter
 
 if selected_institute:
-filtered = filtered[
-filtered["Institute"].isin(selected_institute)
-]
+    filtered = filtered[
+    filtered["Institute"].isin(selected_institute)
+    ]
 
 # Start Date
 
 if start_after:
-filtered = filtered[
-filtered["Start date"] >= pd.to_datetime(start_after)
-]
+    filtered = filtered[
+    filtered["Start date"] >= pd.to_datetime(start_after)
+    ]
 
 # Exam Date
 
 if exam_before:
-filtered = filtered[
-filtered["Exam date"] <= pd.to_datetime(exam_before)
-]
+    filtered = filtered[
+    filtered["Exam date"] <= pd.to_datetime(exam_before)
+    ]
 
 # Recommendation Engine
 
 if recommendation != "All":
 
 
-keywords = {
+    keywords = {
     "BCA Students": [
         "python","java","dbms","database",
         "web","cloud","cyber","programming",
