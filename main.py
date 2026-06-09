@@ -76,7 +76,7 @@ The button will take you directly to the course page where you can complete your
 </div>
 
 <div class="step-box">
-<span class="step-number">Step 4 — Enter Your College Code During Exam Registration</span><br><br>
+<span class="step-number">Step 4 — Enter Your College Code During Course Registration</span><br><br>
 When registering for the proctored exam, enter your college's NPTEL Local Chapter code:
 <ul>
 <li>🏫 <strong>VBSPU Students</strong> — Microtek College of Management and Technology, Jaunpur &nbsp;|&nbsp; Code: <strong>8666</strong></li>
